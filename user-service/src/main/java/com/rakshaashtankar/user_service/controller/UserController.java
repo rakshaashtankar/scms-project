@@ -2,6 +2,7 @@ package com.rakshaashtankar.user_service.controller;
 
 import com.rakshaashtankar.user_service.entity.User;
 import com.rakshaashtankar.user_service.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,18 +29,18 @@ public class UserController {
     }
 
     @PostMapping()
-    public User createUser(@RequestBody User user) {
+    public User createUser(@Valid @RequestBody User user) {
         return userService.createUser(user);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
+    public ResponseEntity<User> updateUser(@PathVariable Long id, @Valid @RequestBody User userDetails) {
         User updatedUser = userService.updateUser(id, userDetails);
         if(updatedUser == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(updatedUser);
-    }
+    } 
 
     @DeleteMapping("/{id}")
     public ResponseEntity<User> deleteUser(@PathVariable Long id) {
