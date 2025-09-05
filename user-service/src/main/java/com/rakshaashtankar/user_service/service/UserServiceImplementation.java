@@ -1,6 +1,6 @@
 package com.rakshaashtankar.user_service.service;
 
-import com.rakshaashtankar.user_service.entity.User;
+import com.rakshaashtankar.user_service.model.User;
 import com.rakshaashtankar.user_service.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

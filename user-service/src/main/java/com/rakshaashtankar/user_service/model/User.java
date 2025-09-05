@@ -1,4 +1,4 @@
-package com.rakshaashtankar.user_service.entity;
+package com.rakshaashtankar.user_service.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;

@@ -1,6 +1,6 @@
 package com.rakshaashtankar.user_service.controller;
 
-import com.rakshaashtankar.user_service.entity.User;
+import com.rakshaashtankar.user_service.model.User;
 import com.rakshaashtankar.user_service.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

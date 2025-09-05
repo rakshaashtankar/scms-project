@@ -1,6 +1,6 @@
 package com.rakshaashtankar.user_service.service;
 
-import com.rakshaashtankar.user_service.entity.User;
+import com.rakshaashtankar.user_service.model.User;
 
 import java.util.List;
 import java.util.Optional;
