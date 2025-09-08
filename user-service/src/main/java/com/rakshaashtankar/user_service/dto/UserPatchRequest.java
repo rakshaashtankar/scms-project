@@ -9,8 +9,6 @@ import lombok.Data;
 
 @Data
 public class UserPatchRequest {
-    @Size(min = 5, max = 50)
-    private String username;
 
     @Email(message = "Invalid email format")
     private String email;
@@ -22,8 +20,4 @@ public class UserPatchRequest {
     )
     private String password;
 
-    @Pattern(regexp = "ADMIN|STUDENT|FACULTY",
-            message = "Role must be ADMIN, STUDENT, or FACULTY"
-    )
-    private String role;
 }
