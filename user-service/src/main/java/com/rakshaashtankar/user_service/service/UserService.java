@@ -12,6 +12,6 @@ public interface UserService {
     UserResponse createUser(UserCreateRequest userCreateRequest);
     UserResponse updateUser(Long id, UserUpdateRequest userUpdateRequest);
     UserResponse patchUser(Long id, UserPatchRequest userPatchRequest);
-    boolean deleteUser(Long id);
-    void changePassword(Long id, PasswordChangeRequest passwordChangeRequest);
+    void deleteUser(Long id);
+    String changePassword(Long id, PasswordChangeRequest passwordChangeRequest);
 }

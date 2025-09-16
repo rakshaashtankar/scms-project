@@ -21,12 +21,13 @@ public class UserUpdateRequest {
     private String email;
 
     @NotBlank(message = "Password is required")
-    @Size(min=8, message = "Password must be at least 8 characters")
+    @Pattern(
+            regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$",
+            message = "Password must be at least 8 characters long, contain digit, uppercase, lowercase and special character, and have no whitespace"
+    )
     private String password;
 
     @NotBlank(message = "Role is required")
-    @Pattern(regexp = "ADMIN|STUDENT|FACULTY",
-            message = "Role must be ADMIN, STUDENT, or FACULTY"
-    )
+    @Pattern(regexp = "(?i)ADMIN|STUDENT|FACULTY", message = "Role must be ADMIN, STUDENT, or FACULTY")
     private String role;
 }

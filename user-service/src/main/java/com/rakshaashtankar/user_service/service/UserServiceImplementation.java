@@ -1,6 +1,9 @@
 package com.rakshaashtankar.user_service.service;
 
 import com.rakshaashtankar.user_service.dto.*;
+import com.rakshaashtankar.user_service.exception.InvalidRequestException;
+import com.rakshaashtankar.user_service.exception.PasswordMismatchException;
+import com.rakshaashtankar.user_service.exception.ResourceNotFoundException;
 import com.rakshaashtankar.user_service.mapper.UserMapper;
 import com.rakshaashtankar.user_service.model.User;
 import com.rakshaashtankar.user_service.repository.UserRepository;
@@ -33,31 +36,38 @@ public class UserServiceImplementation implements  UserService{
 
     @Override
     public UserResponse createUser(UserCreateRequest userCreateRequest) {
+        StringBuilder errorMessage = new StringBuilder();
+        if(userRepository.existsByEmail(userCreateRequest.getEmail())) {
+            errorMessage.append("Email already in use: ").append(userCreateRequest.getEmail()).append(" .");
+        }
+        if(userRepository.existsByUsername(userCreateRequest.getUsername())) {
+            errorMessage.append("Username already in use: ").append(userCreateRequest.getUsername()).append(" .");
+        }
+        if(!errorMessage.isEmpty()) {
+            throw new InvalidRequestException(errorMessage.toString().trim());
+        }
         User newUser = UserMapper.toEntity(userCreateRequest);
-        String defaultPassword = newUser.getPassword();
-        newUser.setPassword(passwordEncoder.encode(defaultPassword));
+        newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
         User savedUser = userRepository.save(newUser);
         return UserMapper.toResponse(savedUser);
     }
 
     @Override
-    public UserResponse updateUser(Long id, UserUpdateRequest userUpdateRequest) {
-        User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id : " +id));
-        UserMapper.updateEntity(existingUser, userUpdateRequest);
-        if(userUpdateRequest.getPassword()!= null) {
-            existingUser.setPassword(passwordEncoder.encode(existingUser.getPassword()));
-        }
-        User updateUser = userRepository.save(existingUser);
-        return UserMapper.toResponse(updateUser) ;
-    }
-
-    @Override
     public UserResponse patchUser(Long id, UserPatchRequest userPatchRequest) {
         User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id : " +id));
-        if(userPatchRequest.getEmail() != null) existingUser.setEmail(userPatchRequest.getEmail());
-        if(userPatchRequest.getPassword() != null) {
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id : " +id));
+
+        if (userPatchRequest.getEmail() != null && !userPatchRequest.getEmail().trim().isEmpty()) {
+            String newEmail = userPatchRequest.getEmail().trim();
+            String existingEmail = existingUser.getEmail() != null ? existingUser.getEmail().trim() : "";
+
+            if (newEmail.equals(existingEmail)) {
+                throw new InvalidRequestException("Email is already set to this value: " + existingEmail);
+            }
+
+            existingUser.setEmail(newEmail);
+        }
+        if(userPatchRequest.getPassword() != null && !userPatchRequest.getPassword().trim().isEmpty()) {
             existingUser.setPassword(passwordEncoder.encode(userPatchRequest.getPassword()));
             existingUser.setPasswordChanged(true);
         }
@@ -66,23 +76,35 @@ public class UserServiceImplementation implements  UserService{
     }
 
     @Override
-    public boolean deleteUser(Long id) {
-        Optional<User> optionalUser = userRepository.findById(id);
-        if(optionalUser.isPresent()) {
-            userRepository.deleteById(id);
-            return true;
+    public UserResponse updateUser(Long id, UserUpdateRequest userUpdateRequest) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id : " +id));
+        UserMapper.updateEntity(existingUser, userUpdateRequest);
+        if (userUpdateRequest.getPassword() != null && !userUpdateRequest.getPassword().isBlank()) {
+            existingUser.setPassword(passwordEncoder.encode(userUpdateRequest.getPassword()));
+            existingUser.setPasswordChanged(true);
         }
-        return false;
+        User savedUser = userRepository.save(existingUser);
+        return UserMapper.toResponse(savedUser);
+
     }
 
     @Override
-    public void changePassword(Long id, PasswordChangeRequest passwordChangeRequest) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+    public void deleteUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        userRepository.delete(user);
+    }
+
+    @Override
+    public String changePassword(Long id, PasswordChangeRequest passwordChangeRequest) {
+        User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         if(!passwordEncoder.matches(passwordChangeRequest.getOldPassword(), user.getPassword())) {
-            throw  new RuntimeException("Old password does not match");
+            throw  new PasswordMismatchException("Old password does not match");
         }
         user.setPassword(passwordEncoder.encode(passwordChangeRequest.getNewPassword()));
         user.setPasswordChanged(true);
         userRepository.save(user);
+        return "Password Changed successfully";
     }
 }

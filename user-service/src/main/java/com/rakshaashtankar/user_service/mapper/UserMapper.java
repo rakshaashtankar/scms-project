@@ -11,16 +11,24 @@ public class UserMapper {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
-        user.setPassword(request.getUsername()+"1234");
         user.setRole(request.getRole().toUpperCase());
+        user.setPassword(request.getPassword());
         return  user;
     }
 
     public static void updateEntity(User user, UserUpdateRequest request) {
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
-        user.setPassword(request.getUsername()+"1234");
-        user.setRole(request.getRole());
+        if (request.getUsername() != null) {
+            user.setUsername(request.getUsername().trim());
+        }
+        if (request.getEmail() != null) {
+            user.setEmail(request.getEmail().trim());
+        }
+        if (request.getRole() != null) {
+            user.setRole(request.getRole().toUpperCase());
+        }
+        if (request.getPassword() != null) {
+            user.setPassword(request.getPassword());
+        }
     }
 
     public static UserResponse toResponse(User user) {

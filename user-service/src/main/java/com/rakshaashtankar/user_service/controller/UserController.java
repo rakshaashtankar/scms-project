@@ -1,6 +1,7 @@
 package com.rakshaashtankar.user_service.controller;
 
 import com.rakshaashtankar.user_service.dto.*;
+import com.rakshaashtankar.user_service.exception.ResourceNotFoundException;
 import com.rakshaashtankar.user_service.model.User;
 import com.rakshaashtankar.user_service.service.UserService;
 import jakarta.validation.Valid;
@@ -26,7 +27,7 @@ public class UserController {
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         return userService.getUserById(id)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " +id));
     }
 
     @PostMapping()
@@ -35,41 +36,27 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdateRequest userUpdateRequest) {
-        UserResponse updatedUser = userService.updateUser(id, userUpdateRequest);
-        if(updatedUser == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(updatedUser);
+    public UserResponse updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdateRequest userUpdateRequest) {
+        return userService.updateUser(id, userUpdateRequest);
     }
 
 
     @PatchMapping("/{id}")
-    public ResponseEntity<UserResponse> patchUser(@PathVariable Long id, @Valid @RequestBody UserPatchRequest userPatchRequest) {
-        UserResponse patchUpdatedUser = userService.patchUser(id, userPatchRequest);
-        if(patchUpdatedUser == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(patchUpdatedUser);
+    public UserResponse patchUser(@PathVariable Long id, @Valid @RequestBody UserPatchRequest userPatchRequest) {
+        return userService.patchUser(id, userPatchRequest);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        if(userService.deleteUser(id)) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build(); // 204 Not Found
     }
 
-    @PutMapping("/{id}/change-password")
-    public ResponseEntity<Void> changePassword(@PathVariable Long id,
+    @PutMapping("/{id}/password")
+    public ResponseEntity<String> changePassword(@PathVariable Long id,
                                                @Valid @RequestBody PasswordChangeRequest passwordChangeRequest) {
-        try {
-            userService.changePassword(id, passwordChangeRequest);
-            return ResponseEntity.noContent().build(); // 204 No Content
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(null); // 400 Bad Request
-        }
+        String response = userService.changePassword(id, passwordChangeRequest);
+        return ResponseEntity.ok(response); // 200 OK with success message
     }
 
 }
