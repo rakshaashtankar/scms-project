@@ -3,6 +3,7 @@ package com.rakshaashtankar.user_service.mapper;
 import com.rakshaashtankar.user_service.dto.UserCreateRequest;
 import com.rakshaashtankar.user_service.dto.UserResponse;
 import com.rakshaashtankar.user_service.dto.UserUpdateRequest;
+import com.rakshaashtankar.user_service.model.Role;
 import com.rakshaashtankar.user_service.model.User;
 
 public class UserMapper {
@@ -11,7 +12,7 @@ public class UserMapper {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
-        user.setRole(request.getRole().toUpperCase());
+        user.setRole(Role.valueOf(request.getRole().toUpperCase()));
         user.setPassword(request.getPassword());
         return  user;
     }
@@ -24,10 +25,7 @@ public class UserMapper {
             user.setEmail(request.getEmail().trim());
         }
         if (request.getRole() != null) {
-            user.setRole(request.getRole().toUpperCase());
-        }
-        if (request.getPassword() != null) {
-            user.setPassword(request.getPassword());
+            user.setRole(Role.valueOf(request.getRole().toUpperCase()));
         }
     }
 
@@ -36,8 +34,10 @@ public class UserMapper {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getRole(),
-                user.isPasswordChanged()
+                user.getRole().name(),
+                user.isPasswordChanged(),
+                user.getCreatedAt(),
+                user.getUpdatedAt()
         );
     }
 }

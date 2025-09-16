@@ -20,6 +20,7 @@ public class UserUpdateRequest {
     @Email(message = "Invalid email format")
     private String email;
 
+    @Size(min=8, message = "Password must be at least 8 characters")
     @NotBlank(message = "Password is required")
     @Pattern(
             regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$",

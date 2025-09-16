@@ -15,7 +15,7 @@ public class UserPatchRequest {
     @Email(message = "Invalid email format")
     private String email;
 
-    @Size(min=8, message = "Password must be at least 6 characters")
+    @Size(min=8, message = "Password must be at least 8 characters")
     @Pattern(
             regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$",
             message = "Password must be at least 8 characters long, contain digit, uppercase, lowercase and special character, and have no whitespace"

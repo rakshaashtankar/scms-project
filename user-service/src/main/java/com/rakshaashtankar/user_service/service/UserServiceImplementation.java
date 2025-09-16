@@ -7,7 +7,6 @@ import com.rakshaashtankar.user_service.exception.ResourceNotFoundException;
 import com.rakshaashtankar.user_service.mapper.UserMapper;
 import com.rakshaashtankar.user_service.model.User;
 import com.rakshaashtankar.user_service.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,11 +16,13 @@ import java.util.Optional;
 @Service
 public class UserServiceImplementation implements  UserService{
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public UserServiceImplementation(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     public List<UserResponse> getAllUsers() {
@@ -43,7 +44,7 @@ public class UserServiceImplementation implements  UserService{
         if(userRepository.existsByUsername(userCreateRequest.getUsername())) {
             errorMessage.append("Username already in use: ").append(userCreateRequest.getUsername()).append(" .");
         }
-        if(!errorMessage.isEmpty()) {
+        if(errorMessage.length() > 0) {
             throw new InvalidRequestException(errorMessage.toString().trim());
         }
         User newUser = UserMapper.toEntity(userCreateRequest);
@@ -59,18 +60,13 @@ public class UserServiceImplementation implements  UserService{
 
         if (userPatchRequest.getEmail() != null && !userPatchRequest.getEmail().trim().isEmpty()) {
             String newEmail = userPatchRequest.getEmail().trim();
-            String existingEmail = existingUser.getEmail() != null ? existingUser.getEmail().trim() : "";
-
-            if (newEmail.equals(existingEmail)) {
-                throw new InvalidRequestException("Email is already set to this value: " + existingEmail);
+            if (userRepository.existsByEmail(newEmail) && !newEmail.equals(existingUser.getEmail())) {
+                // 🔹 Improved uniqueness check
+                throw new InvalidRequestException("Email already exists: " + newEmail);
             }
-
             existingUser.setEmail(newEmail);
         }
-        if(userPatchRequest.getPassword() != null && !userPatchRequest.getPassword().trim().isEmpty()) {
-            existingUser.setPassword(passwordEncoder.encode(userPatchRequest.getPassword()));
-            existingUser.setPasswordChanged(true);
-        }
+
         User savedUser = userRepository.save(existingUser);
         return UserMapper.toResponse(savedUser);
     }
