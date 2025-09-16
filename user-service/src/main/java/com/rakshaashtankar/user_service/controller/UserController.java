@@ -8,7 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -23,8 +25,14 @@ public class UserController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<?> getAllUsers() {
+        List<UserResponse> users= userService.getAllUsers();
+        if(users.isEmpty()) {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "No records added yet.");
+            return ResponseEntity.ok(response);
+        }
+        return ResponseEntity.ok(users);
     }
 
     @GetMapping("/{id}")
