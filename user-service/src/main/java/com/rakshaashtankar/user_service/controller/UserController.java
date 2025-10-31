@@ -5,6 +5,7 @@ import com.rakshaashtankar.user_service.exception.ResourceNotFoundException;
 import com.rakshaashtankar.user_service.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -25,6 +26,7 @@ public class UserController {
     }
 
     @GetMapping()
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllUsers() {
         List<UserResponse> users= userService.getAllUsers();
         if(users.isEmpty()) {
@@ -36,6 +38,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT', 'FACULTY')")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         return userService.getUserById(id)
                 .map(ResponseEntity::ok)
@@ -43,6 +46,7 @@ public class UserController {
     }
 
     @PostMapping()
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserCreateRequest userCreateRequest) {
         UserResponse response = userService.createUser(userCreateRequest);
         return ResponseEntity
@@ -52,23 +56,27 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponse> updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdateRequest userUpdateRequest) {
         return ResponseEntity.ok(userService.updateUser(id, userUpdateRequest));
     }
 
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT', 'FACULTY')")
     public ResponseEntity<UserResponse> patchUser(@PathVariable Long id, @Valid @RequestBody UserPatchRequest userPatchRequest) {
         return ResponseEntity.ok(userService.patchUser(id, userPatchRequest));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build(); // 204 No Content
     }
 
     @PutMapping("/{id}/password")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT', 'FACULTY')")
     public ResponseEntity<String> changePassword(@PathVariable Long id,
                                                @Valid @RequestBody PasswordChangeRequest passwordChangeRequest) {
         String response = userService.changePassword(id, passwordChangeRequest);
